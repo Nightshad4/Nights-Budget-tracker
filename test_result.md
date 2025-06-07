@@ -149,6 +149,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "Successfully tested creating, retrieving, updating, and deleting transactions. Filtering by category, type, and date range works correctly."
+      - working: true
+        agent: "testing"
+        comment: "Performed focused testing on the transaction delete functionality. The DELETE /api/transactions/{id} endpoint is working correctly. Created a test user, added multiple transactions, and successfully deleted one transaction. Verified that the transaction was actually removed from the database. Also tested edge cases: attempting to delete non-existent transactions and transactions belonging to other users both correctly return 404 errors. The transaction delete functionality is working as expected with proper authentication and error handling."
 
   - task: "Analytics Dashboard API"
     implemented: true
