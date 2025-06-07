@@ -380,15 +380,32 @@ async def delete_goal(goal_id: str, current_user_id: str = Depends(get_current_u
 
 # Analytics routes
 @api_router.get("/analytics/dashboard")
-async def get_dashboard_analytics(current_user_id: str = Depends(get_current_user)):
-    # Get current month data
+async def get_dashboard_analytics(
+    period: str = "month",  # "24h", "week", "month", "3months", "6months", "year"
+    current_user_id: str = Depends(get_current_user)
+):
+    # Calculate date range based on period
     now = datetime.utcnow()
-    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
-    # Get transactions for current month
+    if period == "24h":
+        start_date = now - timedelta(hours=24)
+    elif period == "week":
+        start_date = now - timedelta(days=7)
+    elif period == "month":
+        start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    elif period == "3months":
+        start_date = now - timedelta(days=90)
+    elif period == "6months":
+        start_date = now - timedelta(days=180)
+    elif period == "year":
+        start_date = now - timedelta(days=365)
+    else:
+        start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Get transactions for the selected period
     transactions_cursor = db.transactions.find({
         "user_id": current_user_id,
-        "date": {"$gte": start_of_month}
+        "date": {"$gte": start_date}
     })
     transactions = await transactions_cursor.to_list(1000)
     
@@ -436,13 +453,29 @@ async def get_dashboard_analytics(current_user_id: str = Depends(get_current_use
             transaction["category_name"] = category_map[cat_id]["name"]
             transaction["category_icon"] = category_map[cat_id]["icon"]
     
+    # Format period label
+    if period == "24h":
+        period_label = "Last 24 Hours"
+    elif period == "week":
+        period_label = "Last 7 Days"
+    elif period == "month":
+        period_label = start_date.strftime("%B %Y")
+    elif period == "3months":
+        period_label = f"Last 3 Months (from {start_date.strftime('%B %d, %Y')})"
+    elif period == "6months":
+        period_label = f"Last 6 Months (from {start_date.strftime('%B %d, %Y')})"
+    elif period == "year":
+        period_label = f"Last Year (from {start_date.strftime('%B %d, %Y')})"
+    else:
+        period_label = start_date.strftime("%B %Y")
+    
     return {
         "total_income": total_income,
         "total_expenses": total_expenses,
         "balance": balance,
         "category_spending": category_data,
         "recent_transactions": recent_transactions,
-        "month": start_of_month.strftime("%B %Y")
+        "period": period_label
     }
 
 @api_router.get("/analytics/spending-trend")
