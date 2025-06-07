@@ -1550,7 +1550,6 @@ const Settings = () => {
     new_password: '',
     confirm_password: ''
   });
-  const [resetEmail, setResetEmail] = useState('');
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { logout } = useAuth();
 
