@@ -409,6 +409,7 @@
   }
   
   .dark {
-    @apply text-black bg-white;
+    color: black !important;
+    background: white !important;
   }
 }
