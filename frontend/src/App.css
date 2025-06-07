@@ -182,11 +182,23 @@
 
 /* Dashboard card styles with dark mode */
 .dashboard-card {
-  @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg transition-all duration-300;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.dark .dashboard-card {
+  background-color: #1f2937;
 }
 
 .dashboard-card:hover {
-  @apply shadow-xl dark:shadow-2xl transform -translate-y-1;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(-1px);
+}
+
+.dark .dashboard-card:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
 /* Transaction item styles with dark mode */
