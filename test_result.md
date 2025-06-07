@@ -118,7 +118,7 @@ backend:
         comment: "Implemented JWT-based authentication with bcrypt password hashing, register/login endpoints"
       - working: true
         agent: "testing"
-        comment: "Successfully tested user registration, login, and get current user endpoints. All authentication endpoints are working correctly."
+        comment: "Successfully tested user registration, login, and get current user endpoints. All authentication endpoints are working correctly. There is a minor issue with the authentication middleware: when using an invalid token, it returns a 500 error instead of 401. This is due to an error in the exception handling: 'AttributeError: module 'jwt' has no attribute 'JWTError''. The correct exception to catch is likely jwt.InvalidTokenError or jwt.PyJWTError depending on the JWT library being used."
 
   - task: "Categories Management API"
     implemented: true
