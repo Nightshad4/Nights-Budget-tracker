@@ -28,11 +28,20 @@ ChartJS.register(
 
 // Auth Context
 const AuthContext = createContext();
+const ThemeContext = createContext();
 
 const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
 };
