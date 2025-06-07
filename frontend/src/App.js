@@ -758,7 +758,9 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Income vs Expenses Trend */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Income vs Expenses Trend</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            Income vs Expenses Trend - {periodOptions.find(p => p.value === selectedPeriod)?.label}
+          </h3>
           <div className="h-80">
             <Line data={lineChartData} options={{...chartOptions, plugins: {...chartOptions.plugins, legend: {...chartOptions.plugins.legend, labels: {color: isDarkMode ? '#ffffff' : '#000000'}}}}} />
           </div>
@@ -784,7 +786,9 @@ const Dashboard = () => {
 
       {/* Net Income Bar Chart */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Monthly Net Income</h3>
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          Net Income Trend - {periodOptions.find(p => p.value === selectedPeriod)?.label}
+        </h3>
         <div className="h-80">
           <Bar data={barChartData} options={{...chartOptions, plugins: {...chartOptions.plugins, legend: {...chartOptions.plugins.legend, labels: {color: isDarkMode ? '#ffffff' : '#000000'}}}}} />
         </div>
