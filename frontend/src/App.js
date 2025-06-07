@@ -687,15 +687,6 @@ const Dashboard = () => {
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
-          <select
-            value={selectedTrendPeriod}
-            onChange={(e) => setSelectedTrendPeriod(parseInt(e.target.value))}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          >
-            <option value={3}>Trend: 3 months</option>
-            <option value={6}>Trend: 6 months</option>
-            <option value={12}>Trend: 12 months</option>
-          </select>
           <button
             onClick={() => handleExport('json')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2"
