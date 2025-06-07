@@ -190,14 +190,27 @@ async def register(user_data: UserRegister):
     
     # Create default categories
     default_categories = [
+        # Income categories
         {"name": "Salary", "type": "income", "color": "#10B981", "icon": "💰"},
         {"name": "Freelance", "type": "income", "color": "#059669", "icon": "💼"},
+        {"name": "Investment Returns", "type": "income", "color": "#047857", "icon": "📈"},
+        {"name": "Bank Interest", "type": "income", "color": "#065F46", "icon": "🏦"},
+        {"name": "Cash Income", "type": "income", "color": "#064E3B", "icon": "💵"},
+        {"name": "Bonus", "type": "income", "color": "#34D399", "icon": "🎁"},
+        
+        # Expense categories
         {"name": "Food & Dining", "type": "expense", "color": "#EF4444", "icon": "🍕"},
         {"name": "Transportation", "type": "expense", "color": "#F59E0B", "icon": "🚗"},
         {"name": "Shopping", "type": "expense", "color": "#8B5CF6", "icon": "🛒"},
         {"name": "Entertainment", "type": "expense", "color": "#EC4899", "icon": "🎬"},
         {"name": "Bills & Utilities", "type": "expense", "color": "#6B7280", "icon": "⚡"},
         {"name": "Healthcare", "type": "expense", "color": "#14B8A6", "icon": "🏥"},
+        {"name": "Gas & Fuel", "type": "expense", "color": "#F97316", "icon": "⛽"},
+        {"name": "Groceries", "type": "expense", "color": "#84CC16", "icon": "🛍️"},
+        {"name": "Rent/Mortgage", "type": "expense", "color": "#DC2626", "icon": "🏠"},
+        {"name": "Coffee & Drinks", "type": "expense", "color": "#A3A3A3", "icon": "☕"},
+        {"name": "Technology", "type": "expense", "color": "#3B82F6", "icon": "💻"},
+        {"name": "Cash Expenses", "type": "expense", "color": "#6366F1", "icon": "💳"},
     ]
     
     for cat_data in default_categories:
