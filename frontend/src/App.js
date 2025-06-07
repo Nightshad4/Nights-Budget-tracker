@@ -77,17 +77,41 @@ const api = {
       ...options.headers,
     };
 
+    console.log('Making API request:', {
+      method: options.method || 'GET',
+      url: `${API_BASE_URL}/api${endpoint}`,
+      headers: headers
+    });
+
     const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
       ...options,
       headers,
     });
 
+    console.log('API response:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+
     if (!response.ok) {
       const error = await response.text();
+      console.error('API error response:', error);
       throw new Error(error || 'Request failed');
     }
 
-    return response.json();
+    // Handle empty responses (like DELETE requests)
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const result = await response.json();
+      console.log('API JSON response:', result);
+      return result;
+    } else {
+      // For non-JSON responses (like DELETE), try to get text or return empty object
+      const text = await response.text();
+      console.log('API text response:', text);
+      return text ? JSON.parse(text) : { success: true };
+    }
   },
 
   // Auth
