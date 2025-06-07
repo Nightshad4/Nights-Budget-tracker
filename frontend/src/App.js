@@ -315,6 +315,9 @@ const LoginForm = ({ onToggle }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -331,14 +334,96 @@ const LoginForm = ({ onToggle }) => {
     }
   };
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    try {
+      await api.forgotPassword(resetEmail);
+      setResetMessage('Password reset instructions sent to your email if the account exists.');
+      setResetEmail('');
+      setTimeout(() => {
+        setShowForgotPassword(false);
+        setResetMessage('');
+      }, 3000);
+    } catch (error) {
+      console.error('Error sending password reset:', error);
+      setError('Error sending password reset. Please try again.');
+    }
+  };
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 w-full max-w-md border border-gray-200 dark:border-gray-700">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-white font-bold text-3xl">🔑</span>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Forgot Password
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">Enter your email to receive reset instructions</p>
+          </div>
+
+          {resetMessage && (
+            <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl mb-4">
+              {resetMessage}
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl mb-4">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleForgotPassword} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter your email address"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Send Reset Instructions
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => {
+                setShowForgotPassword(false);
+                setError('');
+                setResetMessage('');
+              }}
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition"
+            >
+              ← Back to Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 w-full max-w-md border border-white/20 dark:border-gray-700/50">
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 w-full max-w-md border border-gray-200 dark:border-gray-700">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-3xl">B</span>
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Welcome Back
           </h1>
           <p className="text-gray-600 dark:text-gray-300">Sign in to your budget tracker</p>
@@ -360,7 +445,7 @@ const LoginForm = ({ onToggle }) => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white backdrop-blur-sm"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Enter your email"
             />
           </div>
@@ -374,7 +459,7 @@ const LoginForm = ({ onToggle }) => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white backdrop-blur-sm"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Enter your password"
             />
           </div>
@@ -388,7 +473,14 @@ const LoginForm = ({ onToggle }) => {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center space-y-2">
+          <button
+            onClick={() => setShowForgotPassword(true)}
+            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm transition"
+          >
+            Forgot your password?
+          </button>
+          
           <p className="text-gray-600 dark:text-gray-300">
             Don't have an account?{' '}
             <button
