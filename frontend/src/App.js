@@ -1975,7 +1975,7 @@ const BudgetTrackerApp = () => {
                   <span className="text-white font-bold text-lg">B</span>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                     Budget Tracker
                   </h1>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Professional Finance Manager</p>
