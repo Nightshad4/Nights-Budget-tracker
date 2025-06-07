@@ -451,10 +451,11 @@ async def get_spending_trend(months: int = 6, current_user_id: str = Depends(get
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=months * 30)
     
-    transactions = await db.transactions.find({
+    transactions_cursor = db.transactions.find({
         "user_id": current_user_id,
         "date": {"$gte": start_date, "$lte": end_date}
-    }).to_list(1000)
+    })
+    transactions = await transactions_cursor.to_list(1000)
     
     # Group by month
     monthly_data = {}
