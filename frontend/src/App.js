@@ -600,7 +600,7 @@ const Dashboard = () => {
   };
 
   const lineChartData = {
-    labels: spendingTrend.map(item => item.month),
+    labels: spendingTrend.map(item => item.period),
     datasets: [
       {
         label: 'Income',
@@ -622,7 +622,7 @@ const Dashboard = () => {
   };
 
   const barChartData = {
-    labels: spendingTrend.map(item => item.month),
+    labels: spendingTrend.map(item => item.period),
     datasets: [
       {
         label: 'Net Income',
