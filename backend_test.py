@@ -688,5 +688,131 @@ def run_all_tests():
     
     return test_results
 
+def run_focused_tests():
+    """Run only the tests for the fixed issues"""
+    print_separator("RUNNING FOCUSED TESTS FOR FIXED ISSUES")
+    test_results = {}
+    
+    # Register a new user for testing
+    try:
+        test_results["User Registration"] = test_auth_register()
+    except Exception as e:
+        print(f"❌ User Registration test failed: {str(e)}")
+        test_results["User Registration"] = False
+        # If registration fails, we can't continue with other tests
+        return test_results
+    
+    # Create categories and transactions for testing analytics
+    try:
+        test_results["Get Categories"] = test_get_categories()
+    except Exception as e:
+        print(f"❌ Get Categories test failed: {str(e)}")
+        test_results["Get Categories"] = False
+    
+    try:
+        test_results["Create Transaction"] = test_create_transaction()
+    except Exception as e:
+        print(f"❌ Create Transaction test failed: {str(e)}")
+        test_results["Create Transaction"] = False
+    
+    # Test JWT Authentication with invalid tokens
+    try:
+        print_separator("Testing JWT Authentication with Invalid Tokens")
+        url = f"{BACKEND_URL}/categories"
+        
+        # Test with malformed token
+        headers = {"Authorization": "Bearer malformed.token.here"}
+        response = requests.get(url, headers=headers)
+        print_response(response, "With Malformed Token")
+        assert response.status_code == 401, f"Request with malformed token should return 401 but got {response.status_code}"
+        
+        # Test with expired token (we'll create one manually)
+        payload = {
+            "sub": "fake_user_id",
+            "exp": datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+        }
+        import jwt
+        expired_token = jwt.encode(payload, "fake_secret", algorithm="HS256")
+        headers = {"Authorization": f"Bearer {expired_token}"}
+        response = requests.get(url, headers=headers)
+        print_response(response, "With Expired Token")
+        assert response.status_code == 401, f"Request with expired token should return 401 but got {response.status_code}"
+        
+        # Test with completely invalid token format
+        headers = {"Authorization": "Bearer not_even_a_jwt_token"}
+        response = requests.get(url, headers=headers)
+        print_response(response, "With Invalid Token Format")
+        assert response.status_code == 401, f"Request with invalid token format should return 401 but got {response.status_code}"
+        
+        print("✅ JWT Authentication with invalid tokens working correctly")
+        test_results["JWT Authentication"] = True
+    except Exception as e:
+        print(f"❌ JWT Authentication test failed: {str(e)}")
+        test_results["JWT Authentication"] = False
+    
+    # Test Dashboard Analytics API
+    try:
+        print_separator("Testing Dashboard Analytics API")
+        url = f"{BACKEND_URL}/analytics/dashboard"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        
+        response = requests.get(url, headers=headers)
+        print_response(response, "Dashboard Analytics Response")
+        
+        assert response.status_code == 200, f"Get dashboard analytics failed with status code {response.status_code}"
+        
+        data = response.json()
+        assert "total_income" in data, "Total income not found in response"
+        assert "total_expenses" in data, "Total expenses not found in response"
+        assert "balance" in data, "Balance not found in response"
+        assert "category_spending" in data, "Category spending not found in response"
+        assert "recent_transactions" in data, "Recent transactions not found in response"
+        
+        # Check that recent_transactions doesn't contain MongoDB ObjectId fields
+        for transaction in data["recent_transactions"]:
+            assert "_id" not in transaction, "MongoDB ObjectId (_id) found in transaction data"
+        
+        print("✅ Dashboard analytics API working correctly without ObjectId serialization issues")
+        test_results["Dashboard Analytics API"] = True
+    except Exception as e:
+        print(f"❌ Dashboard Analytics API test failed: {str(e)}")
+        test_results["Dashboard Analytics API"] = False
+    
+    # Test Spending Trend API
+    try:
+        print_separator("Testing Spending Trend API")
+        url = f"{BACKEND_URL}/analytics/spending-trend"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        
+        response = requests.get(url, headers=headers)
+        print_response(response, "Spending Trend Response")
+        
+        assert response.status_code == 200, f"Get spending trend failed with status code {response.status_code}"
+        
+        data = response.json()
+        assert isinstance(data, list), "Response is not a list"
+        
+        # Test with different months parameter
+        url = f"{BACKEND_URL}/analytics/spending-trend?months=3"
+        response = requests.get(url, headers=headers)
+        print_response(response, "Spending Trend with Months Parameter")
+        
+        assert response.status_code == 200, f"Get spending trend with months parameter failed with status code {response.status_code}"
+        
+        print("✅ Spending trend API working correctly")
+        test_results["Spending Trend API"] = True
+    except Exception as e:
+        print(f"❌ Spending Trend API test failed: {str(e)}")
+        test_results["Spending Trend API"] = False
+    
+    # Print summary
+    print_separator("Test Summary")
+    for test_name, result in test_results.items():
+        status = "✅ PASSED" if result else "❌ FAILED"
+        print(f"{test_name}: {status}")
+    
+    return test_results
+
 if __name__ == "__main__":
-    run_all_tests()
+    # Run only the focused tests for the fixed issues
+    run_focused_tests()
