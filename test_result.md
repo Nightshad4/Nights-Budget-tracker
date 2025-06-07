@@ -237,11 +237,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "User Authentication (Register/Login)"
-    - "Categories Management API"
-    - "Transactions Management API"
     - "Analytics Dashboard API"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Analytics Dashboard API"
   test_all: true
   test_priority: "high_first"
 
