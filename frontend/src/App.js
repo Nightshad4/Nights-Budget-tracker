@@ -767,21 +767,21 @@ const Dashboard = () => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Income vs Expenses Trend */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">Income vs Expenses Trend</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Income vs Expenses Trend</h3>
           <div className="h-80">
-            <Line data={lineChartData} options={chartOptions} />
+            <Line data={lineChartData} options={{...chartOptions, plugins: {...chartOptions.plugins, legend: {...chartOptions.plugins.legend, labels: {color: isDarkMode ? '#ffffff' : '#000000'}}}}} />
           </div>
         </div>
 
         {/* Expense Categories Pie Chart */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">Expense Breakdown by Category</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Expense Breakdown by Category</h3>
           <div className="h-80">
             {dashboardData.category_spending.length > 0 ? (
-              <Pie data={pieChartData} options={pieChartOptions} />
+              <Pie data={pieChartData} options={{...pieChartOptions, plugins: {...pieChartOptions.plugins, legend: {...pieChartOptions.plugins.legend, labels: {color: isDarkMode ? '#ffffff' : '#000000'}}}}} />
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
                 <div className="text-center">
                   <p className="text-xl">📊</p>
                   <p>No expense data available</p>
@@ -793,10 +793,10 @@ const Dashboard = () => {
       </div>
 
       {/* Net Income Bar Chart */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">Monthly Net Income</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Monthly Net Income</h3>
         <div className="h-80">
-          <Bar data={barChartData} options={chartOptions} />
+          <Bar data={barChartData} options={{...chartOptions, plugins: {...chartOptions.plugins, legend: {...chartOptions.plugins.legend, labels: {color: isDarkMode ? '#ffffff' : '#000000'}}}}} />
         </div>
       </div>
 
