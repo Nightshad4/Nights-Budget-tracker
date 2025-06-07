@@ -340,11 +340,21 @@
 
 /* Form validation styles with dark mode */
 .form-error {
-  @apply border-red-500 bg-red-50 dark:bg-red-900/20;
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.dark .form-error {
+  background-color: rgba(220, 38, 38, 0.1);
 }
 
 .form-success {
-  @apply border-green-500 bg-green-50 dark:bg-green-900/20;
+  border-color: #10b981;
+  background-color: #f0fdf4;
+}
+
+.dark .form-success {
+  background-color: rgba(16, 185, 129, 0.1);
 }
 
 /* Money input styles */
