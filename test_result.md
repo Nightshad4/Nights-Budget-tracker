@@ -246,3 +246,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Built comprehensive budget tracker with authentication, transactions, categories, analytics. All backend APIs implemented with proper JWT auth, data validation, CRUD operations. Frontend has modern UI with responsive design, form handling, and real-time updates. Ready for backend testing first, then user approval for frontend testing."
+  - agent: "testing"
+    message: "Completed backend testing. Most APIs are working correctly, but found two issues: 1) The Auth Middleware test failed with a 500 error when using an invalid token (should return 401), and 2) The Dashboard Analytics endpoint returns a 500 Internal Server Error. All other endpoints including user authentication, categories, transactions, spending trends, budgets, and goals are working correctly."
