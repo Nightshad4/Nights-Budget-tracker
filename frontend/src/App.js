@@ -464,17 +464,65 @@ const RegisterForm = ({ onToggle }) => {
   );
 };
 
-// Dashboard Component
+// Enhanced Dashboard Component
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
+  const [spendingTrend, setSpendingTrend] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState(6);
 
   useEffect(() => {
-    api.getDashboard()
-      .then(setDashboardData)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+    Promise.all([
+      api.getDashboard(),
+      api.getSpendingTrend(selectedPeriod)
+    ]).then(([dashboard, trend]) => {
+      setDashboardData(dashboard);
+      setSpendingTrend(trend);
+    }).catch(console.error).finally(() => setLoading(false));
+  }, [selectedPeriod]);
+
+  const handleExport = async (format) => {
+    try {
+      setLoading(true);
+      const data = await api.exportData(format);
+      
+      if (format === 'json') {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `budget-tracker-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        // CSV export with multiple files
+        const files = [
+          { name: 'transactions', data: data.transactions },
+          { name: 'categories', data: data.categories },
+          { name: 'budgets', data: data.budgets },
+          { name: 'goals', data: data.goals }
+        ];
+        
+        files.forEach(file => {
+          const blob = new Blob([file.data], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${file.name}-${new Date().toISOString().split('T')[0]}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -492,91 +540,287 @@ const Dashboard = () => {
     );
   }
 
+  // Prepare chart data
+  const pieChartData = {
+    labels: dashboardData.category_spending.map(cat => cat.category),
+    datasets: [
+      {
+        data: dashboardData.category_spending.map(cat => cat.amount),
+        backgroundColor: dashboardData.category_spending.map(cat => cat.color),
+        borderWidth: 2,
+        borderColor: '#ffffff',
+      },
+    ],
+  };
+
+  const lineChartData = {
+    labels: spendingTrend.map(item => item.month),
+    datasets: [
+      {
+        label: 'Income',
+        data: spendingTrend.map(item => item.income),
+        borderColor: '#10B981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        tension: 0.4,
+        fill: true,
+      },
+      {
+        label: 'Expenses',
+        data: spendingTrend.map(item => item.expenses),
+        borderColor: '#EF4444',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  };
+
+  const barChartData = {
+    labels: spendingTrend.map(item => item.month),
+    datasets: [
+      {
+        label: 'Net Income',
+        data: spendingTrend.map(item => item.net),
+        backgroundColor: spendingTrend.map(item => 
+          item.net >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)'
+        ),
+        borderColor: spendingTrend.map(item => 
+          item.net >= 0 ? '#10B981' : '#EF4444'
+        ),
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+      },
+    },
+  };
+
+  const pieChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.parsed;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+          }
+        }
+      }
+    },
+  };
+
   return (
     <div className="space-y-6">
+      {/* Header with Export Options */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900">Dashboard</h2>
+          <p className="text-gray-600 mt-1">Complete overview of your finances for {dashboardData.month}</p>
+        </div>
+        <div className="flex space-x-3">
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(parseInt(e.target.value))}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value={3}>Last 3 months</option>
+            <option value={6}>Last 6 months</option>
+            <option value={12}>Last 12 months</option>
+          </select>
+          <button
+            onClick={() => handleExport('json')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2"
+          >
+            <span>📄</span>
+            <span>Export JSON</span>
+          </button>
+          <button
+            onClick={() => handleExport('csv')}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2"
+          >
+            <span>📊</span>
+            <span>Export CSV</span>
+          </button>
+        </div>
+      </div>
+
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100">Total Income</p>
-              <p className="text-3xl font-bold">${dashboardData.total_income.toFixed(2)}</p>
+              <p className="text-green-100 text-sm">Total Income</p>
+              <p className="text-2xl font-bold">${dashboardData.total_income.toFixed(2)}</p>
+              <p className="text-green-100 text-xs mt-1">This month</p>
             </div>
-            <div className="text-4xl">💰</div>
+            <div className="text-3xl">💰</div>
           </div>
         </div>
 
         <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-red-100">Total Expenses</p>
-              <p className="text-3xl font-bold">${dashboardData.total_expenses.toFixed(2)}</p>
+              <p className="text-red-100 text-sm">Total Expenses</p>
+              <p className="text-2xl font-bold">${dashboardData.total_expenses.toFixed(2)}</p>
+              <p className="text-red-100 text-xs mt-1">This month</p>
             </div>
-            <div className="text-4xl">💸</div>
+            <div className="text-3xl">💸</div>
           </div>
         </div>
 
         <div className={`bg-gradient-to-r ${dashboardData.balance >= 0 ? 'from-blue-500 to-blue-600' : 'from-orange-500 to-orange-600'} rounded-xl p-6 text-white`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-100">Balance</p>
-              <p className="text-3xl font-bold">${dashboardData.balance.toFixed(2)}</p>
+              <p className="text-blue-100 text-sm">Net Balance</p>
+              <p className="text-2xl font-bold">${dashboardData.balance.toFixed(2)}</p>
+              <p className="text-blue-100 text-xs mt-1">Income - Expenses</p>
             </div>
-            <div className="text-4xl">{dashboardData.balance >= 0 ? '📈' : '📉'}</div>
+            <div className="text-3xl">{dashboardData.balance >= 0 ? '📈' : '📉'}</div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-purple-100 text-sm">Savings Rate</p>
+              <p className="text-2xl font-bold">
+                {dashboardData.total_income > 0 ? 
+                  ((dashboardData.balance / dashboardData.total_income) * 100).toFixed(1) : 0}%
+              </p>
+              <p className="text-purple-100 text-xs mt-1">Of total income</p>
+            </div>
+            <div className="text-3xl">🎯</div>
           </div>
         </div>
       </div>
 
-      {/* Recent Transactions */}
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Income vs Expenses Trend */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">Income vs Expenses Trend</h3>
+          <div className="h-80">
+            <Line data={lineChartData} options={chartOptions} />
+          </div>
+        </div>
+
+        {/* Expense Categories Pie Chart */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">Expense Breakdown by Category</h3>
+          <div className="h-80">
+            {dashboardData.category_spending.length > 0 ? (
+              <Pie data={pieChartData} options={pieChartOptions} />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                <div className="text-center">
+                  <p className="text-xl">📊</p>
+                  <p>No expense data available</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Net Income Bar Chart */}
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent Transactions</h3>
-        {dashboardData.recent_transactions.length > 0 ? (
-          <div className="space-y-3">
-            {dashboardData.recent_transactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-2xl">{transaction.category_icon}</span>
-                  <div>
-                    <p className="font-medium text-gray-900">{transaction.description}</p>
-                    <p className="text-sm text-gray-500">{transaction.category_name}</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">Monthly Net Income</h3>
+        <div className="h-80">
+          <Bar data={barChartData} options={chartOptions} />
+        </div>
+      </div>
+
+      {/* Recent Transactions and Category Spending */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Transactions */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-gray-900">Recent Transactions</h3>
+            <span className="text-sm text-gray-500">{dashboardData.recent_transactions.length} latest</span>
+          </div>
+          {dashboardData.recent_transactions.length > 0 ? (
+            <div className="space-y-3">
+              {dashboardData.recent_transactions.map((transaction) => (
+                <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">{transaction.category_icon}</span>
+                    <div>
+                      <p className="font-medium text-gray-900">{transaction.description}</p>
+                      <p className="text-sm text-gray-500">{transaction.category_name}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                      {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(transaction.date).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500 text-center py-8">No transactions yet. Add your first transaction!</p>
-        )}
-      </div>
-
-      {/* Category Spending */}
-      {dashboardData.category_spending.length > 0 && (
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">Spending by Category</h3>
-          <div className="space-y-3">
-            {dashboardData.category_spending.map((category, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div 
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: category.color }}
-                  ></div>
-                  <span className="text-gray-900">{category.category}</span>
-                </div>
-                <span className="font-semibold text-gray-900">${category.amount.toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-4xl mb-2">💳</div>
+              <p>No transactions yet</p>
+              <p className="text-sm">Add your first transaction to get started!</p>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Category Spending List */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-gray-900">Category Spending</h3>
+            <span className="text-sm text-gray-500">This month</span>
+          </div>
+          {dashboardData.category_spending.length > 0 ? (
+            <div className="space-y-3">
+              {dashboardData.category_spending
+                .sort((a, b) => b.amount - a.amount)
+                .map((category, index) => {
+                  const percentage = ((category.amount / dashboardData.total_expenses) * 100).toFixed(1);
+                  return (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: category.color }}
+                        ></div>
+                        <span className="text-gray-900">{category.category}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-semibold text-gray-900">${category.amount.toFixed(2)}</span>
+                        <span className="text-sm text-gray-500 ml-2">({percentage}%)</span>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-4xl mb-2">📊</div>
+              <p>No spending data</p>
+              <p className="text-sm">Add some expenses to see the breakdown</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
