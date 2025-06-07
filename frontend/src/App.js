@@ -1784,26 +1784,16 @@ const Settings = () => {
                   </form>
                 </div>
 
-                {/* Forgot Password */}
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Forgot Password</h4>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">Send a password reset link to your email</p>
-                  <form onSubmit={handleForgotPassword} className="flex gap-4">
-                    <input
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      required
-                    />
-                    <button
-                      type="submit"
-                      className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg transition"
-                    >
-                      Send Reset Link
-                    </button>
-                  </form>
+                {/* Security Tips */}
+                <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">🔐 Security Tips</h4>
+                  <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                    <li>• Use a strong password with at least 8 characters</li>
+                    <li>• Include uppercase, lowercase, numbers, and special characters</li>
+                    <li>• Don't reuse passwords from other accounts</li>
+                    <li>• Consider using a password manager</li>
+                    <li>• If you forget your password, use "Forgot Password" on the login screen</li>
+                  </ul>
                 </div>
               </div>
             )}
