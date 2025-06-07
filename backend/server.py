@@ -266,6 +266,116 @@ async def get_current_user_info(current_user_id: str = Depends(get_current_user)
         raise HTTPException(status_code=404, detail="User not found")
     return UserResponse(**user)
 
+# Settings routes
+@api_router.get("/settings", response_model=AccountSettings)
+async def get_user_settings(current_user_id: str = Depends(get_current_user)):
+    user = await db.users.find_one({"id": current_user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return AccountSettings(
+        name=user["name"],
+        email=user["email"],
+        currency=user.get("settings", {}).get("currency", "USD"),
+        notifications=user.get("settings", {}).get("notifications", True),
+        theme=user.get("settings", {}).get("theme", "light")
+    )
+
+@api_router.put("/settings")
+async def update_user_settings(
+    settings_update: AccountSettingsUpdate,
+    current_user_id: str = Depends(get_current_user)
+):
+    user = await db.users.find_one({"id": current_user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    update_data = {}
+    
+    # Update basic profile info
+    if settings_update.name is not None:
+        update_data["name"] = settings_update.name
+    if settings_update.email is not None:
+        # Check if email is already taken by another user
+        existing_user = await db.users.find_one({
+            "email": settings_update.email,
+            "id": {"$ne": current_user_id}
+        })
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        update_data["email"] = settings_update.email
+    
+    # Update settings
+    current_settings = user.get("settings", {})
+    if settings_update.currency is not None:
+        current_settings["currency"] = settings_update.currency
+    if settings_update.notifications is not None:
+        current_settings["notifications"] = settings_update.notifications
+    if settings_update.theme is not None:
+        current_settings["theme"] = settings_update.theme
+    
+    update_data["settings"] = current_settings
+    
+    await db.users.update_one(
+        {"id": current_user_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Settings updated successfully"}
+
+@api_router.post("/settings/change-password")
+async def change_password(
+    password_data: PasswordChange,
+    current_user_id: str = Depends(get_current_user)
+):
+    user = await db.users.find_one({"id": current_user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify current password
+    if not verify_password(password_data.current_password, user["hashed_password"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Update password
+    new_hashed_password = hash_password(password_data.new_password)
+    await db.users.update_one(
+        {"id": current_user_id},
+        {"$set": {"hashed_password": new_hashed_password}}
+    )
+    
+    return {"message": "Password changed successfully"}
+
+@api_router.post("/settings/forgot-password")
+async def forgot_password(password_reset: PasswordReset):
+    user = await db.users.find_one({"email": password_reset.email})
+    if not user:
+        # Don't reveal if email exists or not for security
+        return {"message": "If your email is registered, you will receive a password reset link"}
+    
+    # In a real application, you would:
+    # 1. Generate a secure reset token
+    # 2. Store it in the database with expiration
+    # 3. Send an email with the reset link
+    # For now, we'll just return a success message
+    
+    return {"message": "If your email is registered, you will receive a password reset link"}
+
+@api_router.delete("/settings/delete-account")
+async def delete_account(current_user_id: str = Depends(get_current_user)):
+    # Delete all user data
+    await db.transactions.delete_many({"user_id": current_user_id})
+    await db.categories.delete_many({"user_id": current_user_id})
+    await db.budgets.delete_many({"user_id": current_user_id})
+    await db.goals.delete_many({"user_id": current_user_id})
+    
+    # Delete user account
+    result = await db.users.delete_one({"id": current_user_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "Account deleted successfully"}
+
 # Categories routes
 @api_router.get("/categories", response_model=List[Category])
 async def get_categories(current_user_id: str = Depends(get_current_user)):
