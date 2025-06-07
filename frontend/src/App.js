@@ -882,6 +882,7 @@ const Transactions = () => {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const { isDarkMode } = useTheme();
 
   const [formData, setFormData] = useState({
     amount: '',
@@ -922,6 +923,7 @@ const Transactions = () => {
       resetForm();
     } catch (error) {
       console.error('Error saving transaction:', error);
+      alert('Error saving transaction. Please try again.');
     }
   };
 
@@ -952,10 +954,13 @@ const Transactions = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
       try {
+        console.log('Deleting transaction with ID:', id); // Debug log
         await api.deleteTransaction(id);
         setTransactions(transactions.filter(t => t.id !== id));
+        console.log('Transaction deleted successfully'); // Debug log
       } catch (error) {
         console.error('Error deleting transaction:', error);
+        alert('Error deleting transaction. Please try again.');
       }
     }
   };
@@ -981,7 +986,7 @@ const Transactions = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Transactions</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Transactions</h2>
         <button
           onClick={() => setShowAddForm(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
@@ -992,30 +997,30 @@ const Transactions = () => {
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             {editingTransaction ? 'Edit Transaction' : 'Add New Transaction'}
           </h3>
           
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Amount</label>
               <input
                 type="number"
                 step="0.01"
                 required
                 value={formData.amount}
                 onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({...formData, type: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
@@ -1023,12 +1028,12 @@ const Transactions = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
               <select
                 required
                 value={formData.category_id}
                 onChange={(e) => setFormData({...formData, category_id: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="">Select Category</option>
                 {categories
@@ -1042,24 +1047,24 @@ const Transactions = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date</label>
               <input
                 type="date"
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({...formData, date: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
               <input
                 type="text"
                 required
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 placeholder="Transaction description"
               />
             </div>
@@ -1084,18 +1089,18 @@ const Transactions = () => {
       )}
 
       {/* Transactions List */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Transactions</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Transactions</h3>
         
         {transactions.length > 0 ? (
           <div className="space-y-3">
             {transactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+              <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
                 <div className="flex items-center space-x-3">
                   <span className="text-2xl">{getCategoryIcon(transaction.category_id)}</span>
                   <div>
-                    <p className="font-medium text-gray-900">{transaction.description}</p>
-                    <p className="text-sm text-gray-500">{getCategoryName(transaction.category_id)}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{transaction.description}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{getCategoryName(transaction.category_id)}</p>
                   </div>
                 </div>
                 
@@ -1104,7 +1109,7 @@ const Transactions = () => {
                     <p className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                       {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(transaction.date).toLocaleDateString()}
                     </p>
                   </div>
@@ -1112,13 +1117,13 @@ const Transactions = () => {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handleEdit(transaction)}
-                      className="text-blue-600 hover:text-blue-700 text-sm"
+                      className="text-blue-600 hover:text-blue-700 text-sm px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 transition"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(transaction.id)}
-                      className="text-red-600 hover:text-red-700 text-sm"
+                      className="text-red-600 hover:text-red-700 text-sm px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition"
                     >
                       Delete
                     </button>
@@ -1128,7 +1133,7 @@ const Transactions = () => {
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-8">No transactions yet. Add your first transaction!</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-8">No transactions yet. Add your first transaction!</p>
         )}
       </div>
     </div>
