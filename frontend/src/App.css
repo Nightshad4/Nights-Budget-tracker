@@ -366,7 +366,13 @@
 /* Progress bar styles with dark mode */
 .progress-bar {
   height: 8px;
-  @apply bg-gray-200 dark:bg-gray-700 rounded overflow-hidden;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dark .progress-bar {
+  background-color: #374151;
 }
 
 .progress-fill {
