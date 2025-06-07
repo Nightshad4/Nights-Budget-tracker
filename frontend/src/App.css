@@ -384,11 +384,18 @@
 
 /* Dark mode specific adjustments */
 .dark input, .dark select, .dark textarea {
-  @apply bg-gray-700 border-gray-600 text-white placeholder-gray-400;
+  background-color: #374151;
+  border-color: #4b5563;
+  color: white;
+}
+
+.dark input::placeholder, .dark select::placeholder, .dark textarea::placeholder {
+  color: #9ca3af;
 }
 
 .dark input:focus, .dark select:focus, .dark textarea:focus {
-  @apply ring-blue-400 border-blue-400;
+  box-shadow: 0 0 0 2px #60a5fa;
+  border-color: #60a5fa;
 }
 
 /* Print styles */
