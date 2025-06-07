@@ -506,18 +506,17 @@ const Dashboard = () => {
   const [spendingTrend, setSpendingTrend] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('month');
-  const [selectedTrendPeriod, setSelectedTrendPeriod] = useState(6);
   const { isDarkMode } = useTheme();
 
   useEffect(() => {
     Promise.all([
       api.getDashboard(selectedPeriod),
-      api.getSpendingTrend(selectedTrendPeriod)
+      api.getSpendingTrend(selectedPeriod)
     ]).then(([dashboard, trend]) => {
       setDashboardData(dashboard);
       setSpendingTrend(trend);
     }).catch(console.error).finally(() => setLoading(false));
-  }, [selectedPeriod, selectedTrendPeriod]);
+  }, [selectedPeriod]);
 
   const periodOptions = [
     { value: '24h', label: 'Last 24 Hours' },
