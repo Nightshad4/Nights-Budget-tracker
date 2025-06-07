@@ -505,17 +505,28 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [spendingTrend, setSpendingTrend] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState(6);
+  const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const [selectedTrendPeriod, setSelectedTrendPeriod] = useState(6);
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     Promise.all([
-      api.getDashboard(),
-      api.getSpendingTrend(selectedPeriod)
+      api.getDashboard(selectedPeriod),
+      api.getSpendingTrend(selectedTrendPeriod)
     ]).then(([dashboard, trend]) => {
       setDashboardData(dashboard);
       setSpendingTrend(trend);
     }).catch(console.error).finally(() => setLoading(false));
-  }, [selectedPeriod]);
+  }, [selectedPeriod, selectedTrendPeriod]);
+
+  const periodOptions = [
+    { value: '24h', label: 'Last 24 Hours' },
+    { value: 'week', label: 'Last 7 Days' },
+    { value: 'month', label: 'This Month' },
+    { value: '3months', label: 'Last 3 Months' },
+    { value: '6months', label: 'Last 6 Months' },
+    { value: 'year', label: 'Last Year' },
+  ];
 
   const handleExport = async (format) => {
     try {
