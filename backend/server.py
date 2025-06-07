@@ -386,10 +386,11 @@ async def get_dashboard_analytics(current_user_id: str = Depends(get_current_use
     start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
     # Get transactions for current month
-    transactions = await db.transactions.find({
+    transactions_cursor = db.transactions.find({
         "user_id": current_user_id,
         "date": {"$gte": start_of_month}
-    }).to_list(1000)
+    })
+    transactions = await transactions_cursor.to_list(1000)
     
     # Calculate totals
     total_income = sum(t["amount"] for t in transactions if t["type"] == "income")
@@ -404,7 +405,8 @@ async def get_dashboard_analytics(current_user_id: str = Depends(get_current_use
             category_spending[cat_id] = category_spending.get(cat_id, 0) + transaction["amount"]
     
     # Get categories to map names
-    categories = await db.categories.find({"user_id": current_user_id}).to_list(1000)
+    categories_cursor = db.categories.find({"user_id": current_user_id})
+    categories = await categories_cursor.to_list(1000)
     category_map = {cat["id"]: cat for cat in categories}
     
     # Format category spending
@@ -418,12 +420,17 @@ async def get_dashboard_analytics(current_user_id: str = Depends(get_current_use
             })
     
     # Get recent transactions
-    recent_transactions = await db.transactions.find({
+    recent_cursor = db.transactions.find({
         "user_id": current_user_id
-    }).sort("date", -1).limit(5).to_list(5)
+    }).sort("date", -1).limit(5)
+    recent_transactions = await recent_cursor.to_list(5)
     
-    # Add category names to recent transactions
+    # Convert ObjectId to string and add category names to recent transactions
     for transaction in recent_transactions:
+        # Convert ObjectId _id to string if it exists and remove it
+        if "_id" in transaction:
+            del transaction["_id"]
+        
         cat_id = transaction["category_id"]
         if cat_id in category_map:
             transaction["category_name"] = category_map[cat_id]["name"]
