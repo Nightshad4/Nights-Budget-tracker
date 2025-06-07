@@ -675,18 +675,27 @@ const Dashboard = () => {
       {/* Header with Export Options */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Dashboard</h2>
-          <p className="text-gray-600 mt-1">Complete overview of your finances for {dashboardData.month}</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h2>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Complete overview of your finances for {dashboardData.period}</p>
         </div>
         <div className="flex space-x-3">
           <select
             value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(parseInt(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
-            <option value={3}>Last 3 months</option>
-            <option value={6}>Last 6 months</option>
-            <option value={12}>Last 12 months</option>
+            {periodOptions.map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+          <select
+            value={selectedTrendPeriod}
+            onChange={(e) => setSelectedTrendPeriod(parseInt(e.target.value))}
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            <option value={3}>Trend: 3 months</option>
+            <option value={6}>Trend: 6 months</option>
+            <option value={12}>Trend: 12 months</option>
           </select>
           <button
             onClick={() => handleExport('json')}
