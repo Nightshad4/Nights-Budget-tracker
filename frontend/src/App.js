@@ -1566,19 +1566,6 @@ const Settings = () => {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { logout } = useAuth();
 
-// Settings Component
-const Settings = () => {
-  const [settings, setSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState('profile');
-  const [passwordData, setPasswordData] = useState({
-    current_password: '',
-    new_password: '',
-    confirm_password: ''
-  });
-  const { isDarkMode, toggleDarkMode } = useTheme();
-  const { logout } = useAuth();
-
   useEffect(() => {
     api.getSettings()
       .then(setSettings)
@@ -1595,6 +1582,32 @@ const Settings = () => {
     } catch (error) {
       console.error('Error updating settings:', error);
       alert('Error updating settings. Please try again.');
+    }
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      alert('New passwords do not match');
+      return;
+    }
+
+    if (passwordData.new_password.length < 8) {
+      alert('New password must be at least 8 characters long');
+      return;
+    }
+
+    try {
+      await api.changePassword({
+        current_password: passwordData.current_password,
+        new_password: passwordData.new_password
+      });
+      setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
+      alert('Password changed successfully!');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      alert('Error changing password. Please check your current password.');
     }
   };
 
