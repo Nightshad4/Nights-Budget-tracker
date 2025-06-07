@@ -126,7 +126,8 @@
 /* Form input focus styles with dark mode */
 .form-input:focus {
   outline: none;
-  @apply ring-2 ring-blue-500 border-transparent;
+  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: transparent;
 }
 
 /* Custom gradient backgrounds */
