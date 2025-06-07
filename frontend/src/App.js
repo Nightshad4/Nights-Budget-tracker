@@ -1598,58 +1598,6 @@ const Settings = () => {
     }
   };
 
-  const handlePasswordChange = async (e) => {
-    e.preventDefault();
-    
-    if (passwordData.new_password !== passwordData.confirm_password) {
-      alert('New passwords do not match');
-      return;
-    }
-
-    if (passwordData.new_password.length < 8) {
-      alert('New password must be at least 8 characters long');
-      return;
-    }
-
-    try {
-      await api.changePassword({
-        current_password: passwordData.current_password,
-        new_password: passwordData.new_password
-      });
-      setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
-      alert('Password changed successfully!');
-    } catch (error) {
-      console.error('Error changing password:', error);
-      alert('Error changing password. Please check your current password.');
-    }
-  };
-
-  const handlePasswordChange = async (e) => {
-    e.preventDefault();
-    
-    if (passwordData.new_password !== passwordData.confirm_password) {
-      alert('New passwords do not match');
-      return;
-    }
-
-    if (passwordData.new_password.length < 8) {
-      alert('New password must be at least 8 characters long');
-      return;
-    }
-
-    try {
-      await api.changePassword({
-        current_password: passwordData.current_password,
-        new_password: passwordData.new_password
-      });
-      setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
-      alert('Password changed successfully!');
-    } catch (error) {
-      console.error('Error changing password:', error);
-      alert('Error changing password. Please check your current password.');
-    }
-  };
-
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
       'Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently delete all your data including transactions, categories, budgets, and goals.'
