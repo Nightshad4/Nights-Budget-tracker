@@ -131,35 +131,35 @@
 }
 
 .dark .bg-white {
-  @apply bg-gray-800;
+  background-color: #1f2937 !important;
 }
 
 .dark .text-gray-900 {
-  @apply text-white;
+  color: #ffffff !important;
 }
 
 .dark .text-gray-600 {
-  @apply text-gray-300;
+  color: #d1d5db !important;
 }
 
 .dark .text-gray-500 {
-  @apply text-gray-400;
+  color: #9ca3af !important;
 }
 
 .dark .border-gray-200 {
-  @apply border-gray-700;
+  border-color: #374151 !important;
 }
 
 .dark .border-gray-300 {
-  @apply border-gray-600;
+  border-color: #4b5563 !important;
 }
 
 .dark .bg-gray-50 {
-  @apply bg-gray-700;
+  background-color: #374151 !important;
 }
 
 .dark .bg-gray-100 {
-  @apply bg-gray-700;
+  background-color: #374151 !important;
 }
 
 /* Dashboard card styles with dark mode */
