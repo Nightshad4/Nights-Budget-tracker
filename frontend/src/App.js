@@ -316,7 +316,7 @@ const LoginForm = ({ onToggle }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-
+  const [resetEmail, setResetEmail] = useState('');
   const [resetMessage, setResetMessage] = useState('');
   const { login } = useAuth();
 
