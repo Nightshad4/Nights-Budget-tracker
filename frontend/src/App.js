@@ -1858,33 +1858,49 @@ const BudgetTrackerApp = () => {
     { id: 'dashboard', name: 'Dashboard', icon: '📊' },
     { id: 'transactions', name: 'Transactions', icon: '💳' },
     { id: 'categories', name: 'Categories', icon: '📝' },
+    { id: 'settings', name: 'Settings', icon: '⚙️' },
   ];
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-      {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-800 shadow-lg">
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'}`}>
+      {/* Enhanced Navigation */}
+      <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-lg border-b border-gray-200/50 dark:border-gray-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">💰 Budget Tracker</h1>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">B</span>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Budget Tracker
+                  </h1>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Professional Finance Manager</p>
+                </div>
+              </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <span className="text-gray-700 dark:text-gray-300">Welcome, {user?.name}!</span>
+              <div className="hidden md:flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-1">
+                <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">{user?.name?.charAt(0)}</span>
+                </div>
+                <span className="text-gray-700 dark:text-gray-300 text-sm">Welcome, {user?.name}!</span>
+              </div>
               
               {/* Dark Mode Toggle */}
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 transform hover:scale-105"
                 title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
-                {isDarkMode ? '☀️' : '🌙'}
+                <span className="text-xl">{isDarkMode ? '☀️' : '🌙'}</span>
               </button>
               
               <button
                 onClick={logout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
                 Logout
               </button>
@@ -1894,21 +1910,24 @@ const BudgetTrackerApp = () => {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tab Navigation */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg mb-8">
-          <div className="flex border-b border-gray-200 dark:border-gray-700">
+        {/* Enhanced Tab Navigation */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 mb-8">
+          <div className="flex border-b border-gray-200/50 dark:border-gray-700/50">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-6 py-4 font-medium transition ${
+                className={`flex items-center space-x-2 px-6 py-4 font-medium transition-all duration-200 relative ${
                   activeTab === tab.id
-                    ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
+                    ? 'text-blue-600 dark:text-blue-400'
                     : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                 }`}
               >
                 <span className="text-xl">{tab.icon}</span>
                 <span>{tab.name}</span>
+                {activeTab === tab.id && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                )}
               </button>
             ))}
           </div>
@@ -1919,6 +1938,7 @@ const BudgetTrackerApp = () => {
           {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'transactions' && <Transactions />}
           {activeTab === 'categories' && <Categories />}
+          {activeTab === 'settings' && <Settings />}
         </div>
       </div>
     </div>
