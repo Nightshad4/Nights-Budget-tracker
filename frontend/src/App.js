@@ -1464,11 +1464,13 @@ const App = () => {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <AuthProvider>
-      <div className="App">
-        <AuthConsumer isLogin={isLogin} setIsLogin={setIsLogin} />
-      </div>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <div className="App">
+          <AuthConsumer isLogin={isLogin} setIsLogin={setIsLogin} />
+        </div>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
