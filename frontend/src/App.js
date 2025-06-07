@@ -541,12 +541,12 @@ const RegisterForm = ({ onToggle }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 w-full max-w-md border border-white/20 dark:border-gray-700/50">
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 w-full max-w-md border border-gray-200 dark:border-gray-700">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-3xl">B</span>
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Create Account
           </h1>
           <p className="text-gray-600 dark:text-gray-300">Start tracking your budget today</p>
@@ -569,7 +569,7 @@ const RegisterForm = ({ onToggle }) => {
               required
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white backdrop-blur-sm"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Enter your full name"
             />
           </div>
@@ -584,7 +584,7 @@ const RegisterForm = ({ onToggle }) => {
               required
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white backdrop-blur-sm"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Enter your email"
             />
           </div>
@@ -599,7 +599,7 @@ const RegisterForm = ({ onToggle }) => {
               required
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white backdrop-blur-sm"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Create a password"
             />
           </div>
@@ -614,7 +614,7 @@ const RegisterForm = ({ onToggle }) => {
               required
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white backdrop-blur-sm"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Confirm your password"
             />
           </div>
