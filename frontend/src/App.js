@@ -185,6 +185,24 @@ const api = {
   getDashboard: (period = 'month') => api.request(`/analytics/dashboard?period=${period}`),
   getSpendingTrend: (period = '6months') => api.request(`/analytics/spending-trend?period=${period}`),
 
+  // Settings
+  getSettings: () => api.request('/settings'),
+  updateSettings: (settings) => api.request('/settings', {
+    method: 'PUT',
+    body: JSON.stringify(settings),
+  }),
+  changePassword: (passwordData) => api.request('/settings/change-password', {
+    method: 'POST',
+    body: JSON.stringify(passwordData),
+  }),
+  forgotPassword: (email) => api.request('/settings/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  }),
+  deleteAccount: () => api.request('/settings/delete-account', {
+    method: 'DELETE',
+  }),
+
   // Export
   exportData: async (format = 'json') => {
     const [transactions, categories, budgets, goals] = await Promise.all([
