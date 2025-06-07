@@ -952,16 +952,31 @@ const Transactions = () => {
   };
 
   const handleDelete = async (id) => {
+    console.log('Delete button clicked for transaction ID:', id);
+    console.log('Transaction object:', transactions.find(t => t.id === id));
+    
     if (window.confirm('Are you sure you want to delete this transaction?')) {
       try {
-        console.log('Deleting transaction with ID:', id); // Debug log
-        await api.deleteTransaction(id);
+        console.log('Attempting to delete transaction with ID:', id);
+        console.log('Making DELETE request to:', `${process.env.REACT_APP_BACKEND_URL}/api/transactions/${id}`);
+        
+        const response = await api.deleteTransaction(id);
+        console.log('Delete response:', response);
+        
         setTransactions(transactions.filter(t => t.id !== id));
-        console.log('Transaction deleted successfully'); // Debug log
+        console.log('Transaction deleted successfully from frontend state');
+        alert('Transaction deleted successfully!');
       } catch (error) {
         console.error('Error deleting transaction:', error);
-        alert('Error deleting transaction. Please try again.');
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          response: error.response
+        });
+        alert(`Error deleting transaction: ${error.message}`);
       }
+    } else {
+      console.log('Delete cancelled by user');
     }
   };
 
