@@ -1598,18 +1598,6 @@ const Settings = () => {
     }
   };
 
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    try {
-      await api.forgotPassword(resetEmail);
-      alert('Password reset instructions sent to your email if the account exists.');
-      setResetEmail('');
-    } catch (error) {
-      console.error('Error sending password reset:', error);
-      alert('Error sending password reset. Please try again.');
-    }
-  };
-
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
       'Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently delete all your data including transactions, categories, budgets, and goals.'
