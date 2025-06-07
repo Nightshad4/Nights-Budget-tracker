@@ -133,6 +133,35 @@ const api = {
   // Analytics
   getDashboard: () => api.request('/analytics/dashboard'),
   getSpendingTrend: (months = 6) => api.request(`/analytics/spending-trend?months=${months}`),
+
+  // Export
+  exportData: async (format = 'json') => {
+    const [transactions, categories, budgets, goals] = await Promise.all([
+      api.request('/transactions?limit=1000'),
+      api.request('/categories'),
+      api.request('/budgets'),
+      api.request('/goals')
+    ]);
+    
+    const exportData = {
+      exported_at: new Date().toISOString(),
+      transactions,
+      categories,
+      budgets,
+      goals
+    };
+
+    if (format === 'csv') {
+      return {
+        transactions: convertToCSV(transactions),
+        categories: convertToCSV(categories),
+        budgets: convertToCSV(budgets),
+        goals: convertToCSV(goals)
+      };
+    }
+    
+    return exportData;
+  },
 };
 
 // Auth Provider Component
