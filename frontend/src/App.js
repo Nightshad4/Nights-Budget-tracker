@@ -40,6 +40,24 @@ const useAuth = () => {
 // API configuration
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Helper functions
+const convertToCSV = (data) => {
+  if (!data || !data.length) return '';
+  
+  const headers = Object.keys(data[0]);
+  const csvRows = [
+    headers.join(','),
+    ...data.map(row => 
+      headers.map(header => {
+        const value = row[header];
+        return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
+      }).join(',')
+    )
+  ];
+  
+  return csvRows.join('\n');
+};
+
 // API functions
 const api = {
   async request(endpoint, options = {}) {
