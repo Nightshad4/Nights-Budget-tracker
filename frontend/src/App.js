@@ -1438,7 +1438,417 @@ const Categories = () => {
   );
 };
 
-// Main App Component
+// Settings Component
+const Settings = () => {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState('profile');
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+  const [resetEmail, setResetEmail] = useState('');
+  const { isDarkMode, toggleDarkMode } = useTheme();
+  const { logout } = useAuth();
+
+  useEffect(() => {
+    api.getSettings()
+      .then(setSettings)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSettingsUpdate = async (updateData) => {
+    try {
+      await api.updateSettings(updateData);
+      const updatedSettings = await api.getSettings();
+      setSettings(updatedSettings);
+      alert('Settings updated successfully!');
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      alert('Error updating settings. Please try again.');
+    }
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      alert('New passwords do not match');
+      return;
+    }
+
+    if (passwordData.new_password.length < 8) {
+      alert('New password must be at least 8 characters long');
+      return;
+    }
+
+    try {
+      await api.changePassword({
+        current_password: passwordData.current_password,
+        new_password: passwordData.new_password
+      });
+      setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
+      alert('Password changed successfully!');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      alert('Error changing password. Please check your current password.');
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    try {
+      await api.forgotPassword(resetEmail);
+      alert('Password reset instructions sent to your email if the account exists.');
+      setResetEmail('');
+    } catch (error) {
+      console.error('Error sending password reset:', error);
+      alert('Error sending password reset. Please try again.');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      'Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently delete all your data including transactions, categories, budgets, and goals.'
+    );
+
+    if (confirmDelete) {
+      const doubleConfirm = window.prompt(
+        'To confirm account deletion, please type "DELETE MY ACCOUNT" (case sensitive):'
+      );
+
+      if (doubleConfirm === 'DELETE MY ACCOUNT') {
+        try {
+          await api.deleteAccount();
+          alert('Your account has been successfully deleted.');
+          logout();
+        } catch (error) {
+          console.error('Error deleting account:', error);
+          alert('Error deleting account. Please try again.');
+        }
+      } else {
+        alert('Account deletion cancelled - confirmation text did not match.');
+      }
+    }
+  };
+
+  const sections = [
+    { id: 'profile', name: 'Profile', icon: '👤' },
+    { id: 'security', name: 'Security', icon: '🔒' },
+    { id: 'preferences', name: 'Preferences', icon: '⚙️' },
+    { id: 'account', name: 'Account', icon: '🔧' },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500 dark:text-gray-400">Unable to load settings</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h2>
+        <p className="text-gray-600 dark:text-gray-300 mt-1">Manage your account preferences and security</p>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Settings Navigation */}
+        <div className="lg:w-1/4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <nav className="space-y-2">
+              {sections.map(section => (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition ${
+                    activeSection === section.id
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <span className="text-xl">{section.icon}</span>
+                  <span className="font-medium">{section.name}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+
+        {/* Settings Content */}
+        <div className="lg:w-3/4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            {/* Profile Section */}
+            {activeSection === 'profile' && (
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Profile Information</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
+                    <input
+                      type="text"
+                      value={settings.name}
+                      onChange={(e) => setSettings({...settings, name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                    <input
+                      type="email"
+                      value={settings.email}
+                      onChange={(e) => setSettings({...settings, email: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleSettingsUpdate({ name: settings.name, email: settings.email })}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition"
+                >
+                  Update Profile
+                </button>
+              </div>
+            )}
+
+            {/* Security Section */}
+            {activeSection === 'security' && (
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Security Settings</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mt-1">Manage your password and account security</p>
+                </div>
+
+                {/* Change Password */}
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Change Password</h4>
+                  <form onSubmit={handlePasswordChange} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={passwordData.current_password}
+                        onChange={(e) => setPasswordData({...passwordData, current_password: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+                        <input
+                          type="password"
+                          required
+                          value={passwordData.new_password}
+                          onChange={(e) => setPasswordData({...passwordData, new_password: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
+                        <input
+                          type="password"
+                          required
+                          value={passwordData.confirm_password}
+                          onChange={(e) => setPasswordData({...passwordData, confirm_password: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="submit"
+                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition"
+                    >
+                      Change Password
+                    </button>
+                  </form>
+                </div>
+
+                {/* Forgot Password */}
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Forgot Password</h4>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">Send a password reset link to your email</p>
+                  <form onSubmit={handleForgotPassword} className="flex gap-4">
+                    <input
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg transition"
+                    >
+                      Send Reset Link
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Preferences Section */}
+            {activeSection === 'preferences' && (
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Preferences</h3>
+                
+                <div className="space-y-6">
+                  {/* Theme */}
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Dark Mode</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Toggle between light and dark themes</p>
+                    </div>
+                    <button
+                      onClick={toggleDarkMode}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        isDarkMode ? 'bg-blue-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          isDarkMode ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Currency */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Default Currency</label>
+                    <select
+                      value={settings.currency}
+                      onChange={(e) => {
+                        const newSettings = {...settings, currency: e.target.value};
+                        setSettings(newSettings);
+                        handleSettingsUpdate({ currency: e.target.value });
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="USD">🇺🇸 USD - US Dollar</option>
+                      <option value="EUR">🇪🇺 EUR - Euro</option>
+                      <option value="GBP">🇬🇧 GBP - British Pound</option>
+                      <option value="JPY">🇯🇵 JPY - Japanese Yen</option>
+                      <option value="CAD">🇨🇦 CAD - Canadian Dollar</option>
+                      <option value="AUD">🇦🇺 AUD - Australian Dollar</option>
+                      <option value="CHF">🇨🇭 CHF - Swiss Franc</option>
+                      <option value="CNY">🇨🇳 CNY - Chinese Yuan</option>
+                      <option value="INR">🇮🇳 INR - Indian Rupee</option>
+                    </select>
+                  </div>
+
+                  {/* Notifications */}
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Email Notifications</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Receive budget alerts and updates via email</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newNotifications = !settings.notifications;
+                        setSettings({...settings, notifications: newNotifications});
+                        handleSettingsUpdate({ notifications: newNotifications });
+                      }}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        settings.notifications ? 'bg-blue-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          settings.notifications ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Account Section */}
+            {activeSection === 'account' && (
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Account Management</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mt-1">Manage your account data and settings</p>
+                </div>
+
+                {/* Export Data */}
+                <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">📊 Export Your Data</h4>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">Download all your financial data for backup or analysis</p>
+                  <div className="flex gap-4">
+                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition">
+                      Export as JSON
+                    </button>
+                    <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition">
+                      Export as CSV
+                    </button>
+                  </div>
+                </div>
+
+                {/* Account Statistics */}
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">📈 Account Statistics</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">-</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300">Transactions</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">-</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300">Categories</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">-</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300">Budgets</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600">-</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300">Goals</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Danger Zone */}
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-6">
+                  <h4 className="text-lg font-medium text-red-900 dark:text-red-300 mb-4">⚠️ Danger Zone</h4>
+                  <p className="text-red-700 dark:text-red-300 mb-4">
+                    Once you delete your account, there is no going back. This will permanently delete your account and all associated data including transactions, categories, budgets, and goals.
+                  </p>
+                  <button
+                    onClick={handleDeleteAccount}
+                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition"
+                  >
+                    Delete My Account
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 const BudgetTrackerApp = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const { user, logout } = useAuth();
