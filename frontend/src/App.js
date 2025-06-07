@@ -159,7 +159,7 @@ const api = {
 
   // Analytics
   getDashboard: (period = 'month') => api.request(`/analytics/dashboard?period=${period}`),
-  getSpendingTrend: (months = 6) => api.request(`/analytics/spending-trend?months=${months}`),
+  getSpendingTrend: (period = '6months') => api.request(`/analytics/spending-trend?period=${period}`),
 
   // Export
   exportData: async (format = 'json') => {
