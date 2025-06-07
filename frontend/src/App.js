@@ -803,27 +803,27 @@ const Dashboard = () => {
       {/* Recent Transactions and Category Spending */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Transactions */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold text-gray-900">Recent Transactions</h3>
-            <span className="text-sm text-gray-500">{dashboardData.recent_transactions.length} latest</span>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Recent Transactions</h3>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{dashboardData.recent_transactions.length} latest</span>
           </div>
           {dashboardData.recent_transactions.length > 0 ? (
             <div className="space-y-3">
               {dashboardData.recent_transactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">{transaction.category_icon}</span>
                     <div>
-                      <p className="font-medium text-gray-900">{transaction.description}</p>
-                      <p className="text-sm text-gray-500">{transaction.category_name}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{transaction.description}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{transaction.category_name}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                       {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(transaction.date).toLocaleDateString()}
                     </p>
                   </div>
@@ -831,7 +831,7 @@ const Dashboard = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <div className="text-4xl mb-2">💳</div>
               <p>No transactions yet</p>
               <p className="text-sm">Add your first transaction to get started!</p>
@@ -840,10 +840,10 @@ const Dashboard = () => {
         </div>
 
         {/* Category Spending List */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold text-gray-900">Category Spending</h3>
-            <span className="text-sm text-gray-500">This month</span>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Category Spending</h3>
+            <span className="text-sm text-gray-500 dark:text-gray-400">This period</span>
           </div>
           {dashboardData.category_spending.length > 0 ? (
             <div className="space-y-3">
@@ -858,18 +858,18 @@ const Dashboard = () => {
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: category.color }}
                         ></div>
-                        <span className="text-gray-900">{category.category}</span>
+                        <span className="text-gray-900 dark:text-white">{category.category}</span>
                       </div>
                       <div className="text-right">
-                        <span className="font-semibold text-gray-900">${category.amount.toFixed(2)}</span>
-                        <span className="text-sm text-gray-500 ml-2">({percentage}%)</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">${category.amount.toFixed(2)}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">({percentage}%)</span>
                       </div>
                     </div>
                   );
                 })}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <div className="text-4xl mb-2">📊</div>
               <p>No spending data</p>
               <p className="text-sm">Add some expenses to see the breakdown</p>
