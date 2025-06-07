@@ -241,8 +241,7 @@ metadata:
 test_plan:
   current_focus:
     - "Analytics Dashboard API"
-  stuck_tasks:
-    - "Analytics Dashboard API"
+  stuck_tasks: []
   test_all: true
   test_priority: "high_first"
 
