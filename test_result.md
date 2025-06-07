@@ -163,7 +163,7 @@ backend:
         comment: "Implemented dashboard analytics with income/expense totals, category spending, spending trends"
       - working: false
         agent: "testing"
-        comment: "Dashboard analytics endpoint (/api/analytics/dashboard) returns a 500 Internal Server Error. The spending trend endpoint works correctly, but the main dashboard analytics has an issue."
+        comment: "Dashboard analytics endpoint (/api/analytics/dashboard) returns a 500 Internal Server Error. The error is related to MongoDB ObjectId serialization: 'TypeError: ObjectId object is not iterable' and 'ValueError: [TypeError(\"'ObjectId' object is not iterable\"), TypeError('vars() argument must have __dict__ attribute')]'. The spending trend endpoint works correctly, but the main dashboard analytics has an issue with JSON serialization of MongoDB ObjectIds."
 
   - task: "Budgets and Goals API"
     implemented: true
