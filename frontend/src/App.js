@@ -158,7 +158,7 @@ const api = {
   }),
 
   // Analytics
-  getDashboard: () => api.request('/analytics/dashboard'),
+  getDashboard: (period = 'month') => api.request(`/analytics/dashboard?period=${period}`),
   getSpendingTrend: (months = 6) => api.request(`/analytics/spending-trend?months=${months}`),
 
   // Export
