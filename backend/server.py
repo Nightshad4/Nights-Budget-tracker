@@ -139,6 +139,28 @@ class GoalCreate(BaseModel):
     target_date: datetime
     description: str = ""
 
+# Additional Models for Settings
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+class PasswordReset(BaseModel):
+    email: EmailStr
+
+class AccountSettings(BaseModel):
+    name: str
+    email: EmailStr
+    currency: str = "USD"
+    notifications: bool = True
+    theme: str = "light"
+
+class AccountSettingsUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    currency: Optional[str] = None
+    notifications: Optional[bool] = None
+    theme: Optional[str] = None
+
 # Utility functions
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
