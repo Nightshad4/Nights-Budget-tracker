@@ -813,6 +813,210 @@ def run_focused_tests():
     
     return test_results
 
+def test_transaction_delete_functionality():
+    """
+    Focused test for transaction delete functionality.
+    This test specifically tests the DELETE /api/transactions/{id} endpoint
+    to verify that transactions can be properly deleted.
+    """
+    print_separator("FOCUSED TEST: TRANSACTION DELETE FUNCTIONALITY")
+    
+    # Step 1: Create a test user and login
+    print("Step 1: Creating test user and logging in...")
+    test_user_delete = {
+        "name": f"Delete Test User {uuid.uuid4().hex[:8]}",
+        "email": f"delete_test_{uuid.uuid4().hex[:8]}@example.com",
+        "password": "DeleteTest123!"
+    }
+    
+    # Register the user
+    url = f"{BACKEND_URL}/auth/register"
+    response = requests.post(url, json=test_user_delete)
+    print_response(response, "Register Response")
+    
+    assert response.status_code == 200, f"Registration failed with status code {response.status_code}"
+    
+    data = response.json()
+    delete_test_token = data["access_token"]
+    delete_test_user_id = data["user"]["id"]
+    
+    print(f"✅ Test user created successfully. User ID: {delete_test_user_id}")
+    
+    # Step 2: Get categories for creating transactions
+    print("\nStep 2: Getting categories for test transactions...")
+    url = f"{BACKEND_URL}/categories"
+    headers = {"Authorization": f"Bearer {delete_test_token}"}
+    response = requests.get(url, headers=headers)
+    
+    assert response.status_code == 200, f"Get categories failed with status code {response.status_code}"
+    
+    categories = response.json()
+    income_category = next((cat for cat in categories if cat["type"] == "income"), None)
+    expense_category = next((cat for cat in categories if cat["type"] == "expense"), None)
+    
+    assert income_category is not None, "No income category found"
+    assert expense_category is not None, "No expense category found"
+    
+    print(f"✅ Categories retrieved successfully. Using income category: {income_category['name']} and expense category: {expense_category['name']}")
+    
+    # Step 3: Create multiple test transactions
+    print("\nStep 3: Creating test transactions...")
+    url = f"{BACKEND_URL}/transactions"
+    
+    # Create 3 transactions (2 expenses, 1 income)
+    test_transactions = []
+    
+    # Transaction 1 - Expense
+    transaction1 = {
+        "amount": 75.50,
+        "type": "expense",
+        "category_id": expense_category["id"],
+        "description": "Test expense 1 - Groceries",
+        "date": format_datetime(datetime.datetime.utcnow() - datetime.timedelta(days=2))
+    }
+    
+    response = requests.post(url, json=transaction1, headers=headers)
+    print_response(response, "Create Transaction 1 Response")
+    
+    assert response.status_code == 200, f"Create transaction 1 failed with status code {response.status_code}"
+    test_transactions.append(response.json())
+    
+    # Transaction 2 - Expense
+    transaction2 = {
+        "amount": 120.75,
+        "type": "expense",
+        "category_id": expense_category["id"],
+        "description": "Test expense 2 - Restaurant",
+        "date": format_datetime(datetime.datetime.utcnow() - datetime.timedelta(days=1))
+    }
+    
+    response = requests.post(url, json=transaction2, headers=headers)
+    print_response(response, "Create Transaction 2 Response")
+    
+    assert response.status_code == 200, f"Create transaction 2 failed with status code {response.status_code}"
+    test_transactions.append(response.json())
+    
+    # Transaction 3 - Income
+    transaction3 = {
+        "amount": 1000.00,
+        "type": "income",
+        "category_id": income_category["id"],
+        "description": "Test income - Salary",
+        "date": format_datetime(datetime.datetime.utcnow())
+    }
+    
+    response = requests.post(url, json=transaction3, headers=headers)
+    print_response(response, "Create Transaction 3 Response")
+    
+    assert response.status_code == 200, f"Create transaction 3 failed with status code {response.status_code}"
+    test_transactions.append(response.json())
+    
+    print(f"✅ Created {len(test_transactions)} test transactions successfully")
+    
+    # Step 4: Verify transactions were created by getting all transactions
+    print("\nStep 4: Verifying transactions were created...")
+    url = f"{BACKEND_URL}/transactions"
+    response = requests.get(url, headers=headers)
+    
+    assert response.status_code == 200, f"Get transactions failed with status code {response.status_code}"
+    
+    all_transactions = response.json()
+    assert len(all_transactions) >= 3, f"Expected at least 3 transactions, but got {len(all_transactions)}"
+    
+    # Verify all our test transaction IDs are in the list
+    transaction_ids = [t["id"] for t in all_transactions]
+    for i, test_trans in enumerate(test_transactions):
+        assert test_trans["id"] in transaction_ids, f"Test transaction {i+1} (ID: {test_trans['id']}) not found in transactions list"
+    
+    print(f"✅ All {len(test_transactions)} test transactions verified in the database")
+    
+    # Step 5: Delete one transaction
+    print("\nStep 5: Deleting a transaction...")
+    transaction_to_delete = test_transactions[1]  # Delete the second transaction (expense 2)
+    url = f"{BACKEND_URL}/transactions/{transaction_to_delete['id']}"
+    
+    print(f"Deleting transaction with ID: {transaction_to_delete['id']}")
+    print(f"DELETE URL: {url}")
+    
+    response = requests.delete(url, headers=headers)
+    print_response(response, "Delete Transaction Response")
+    
+    assert response.status_code == 200, f"Delete transaction failed with status code {response.status_code}"
+    
+    # Step 6: Verify the transaction was deleted
+    print("\nStep 6: Verifying transaction was deleted...")
+    url = f"{BACKEND_URL}/transactions"
+    response = requests.get(url, headers=headers)
+    
+    assert response.status_code == 200, f"Get transactions failed with status code {response.status_code}"
+    
+    remaining_transactions = response.json()
+    remaining_ids = [t["id"] for t in remaining_transactions]
+    
+    # The deleted transaction should not be in the list
+    assert transaction_to_delete["id"] not in remaining_ids, f"Transaction {transaction_to_delete['id']} was not deleted"
+    
+    # The other transactions should still be there
+    assert test_transactions[0]["id"] in remaining_ids, f"Transaction {test_transactions[0]['id']} should still exist but was not found"
+    assert test_transactions[2]["id"] in remaining_ids, f"Transaction {test_transactions[2]['id']} should still exist but was not found"
+    
+    print(f"✅ Transaction {transaction_to_delete['id']} was successfully deleted")
+    print(f"✅ Other transactions still exist in the database")
+    
+    # Step 7: Try to delete a non-existent transaction
+    print("\nStep 7: Testing delete with non-existent transaction ID...")
+    non_existent_id = str(uuid.uuid4())
+    url = f"{BACKEND_URL}/transactions/{non_existent_id}"
+    
+    response = requests.delete(url, headers=headers)
+    print_response(response, "Delete Non-existent Transaction Response")
+    
+    assert response.status_code == 404, f"Delete non-existent transaction should return 404 but got {response.status_code}"
+    
+    print("✅ Delete non-existent transaction correctly returns 404")
+    
+    # Step 8: Try to delete a transaction that belongs to another user
+    # We'll create another user and try to delete a transaction from the first user
+    print("\nStep 8: Testing delete with transaction from another user...")
+    
+    # Create another test user
+    another_test_user = {
+        "name": f"Another Test User {uuid.uuid4().hex[:8]}",
+        "email": f"another_test_{uuid.uuid4().hex[:8]}@example.com",
+        "password": "AnotherTest123!"
+    }
+    
+    url = f"{BACKEND_URL}/auth/register"
+    response = requests.post(url, json=another_test_user)
+    
+    assert response.status_code == 200, f"Registration of another user failed with status code {response.status_code}"
+    
+    another_token = response.json()["access_token"]
+    
+    # Try to delete a transaction from the first user using the second user's token
+    url = f"{BACKEND_URL}/transactions/{test_transactions[0]['id']}"
+    headers = {"Authorization": f"Bearer {another_token}"}
+    
+    response = requests.delete(url, headers=headers)
+    print_response(response, "Delete Another User's Transaction Response")
+    
+    assert response.status_code == 404, f"Delete another user's transaction should return 404 but got {response.status_code}"
+    
+    print("✅ Delete another user's transaction correctly returns 404")
+    
+    # Final verification - the transaction from step 8 should still exist
+    headers = {"Authorization": f"Bearer {delete_test_token}"}
+    url = f"{BACKEND_URL}/transactions"
+    response = requests.get(url, headers=headers)
+    
+    remaining_transactions = response.json()
+    remaining_ids = [t["id"] for t in remaining_transactions]
+    
+    assert test_transactions[0]["id"] in remaining_ids, "Transaction should still exist after failed delete attempt"
+    
+    print("\n✅ TRANSACTION DELETE FUNCTIONALITY TEST COMPLETED SUCCESSFULLY")
+    return True
+
 if __name__ == "__main__":
-    # Run only the focused tests for the fixed issues
-    run_focused_tests()
+    # Test specifically the transaction delete functionality
+    test_transaction_delete_functionality()
