@@ -479,34 +479,73 @@ async def get_dashboard_analytics(
     }
 
 @api_router.get("/analytics/spending-trend")
-async def get_spending_trend(months: int = 6, current_user_id: str = Depends(get_current_user)):
-    # Get transactions for last X months
-    end_date = datetime.utcnow()
-    start_date = end_date - timedelta(days=months * 30)
+async def get_spending_trend(
+    period: str = "6months",  # "24h", "week", "month", "3months", "6months", "year"
+    current_user_id: str = Depends(get_current_user)
+):
+    # Calculate date range based on period
+    now = datetime.utcnow()
+    
+    if period == "24h":
+        start_date = now - timedelta(hours=24)
+        grouping_format = "%Y-%m-%d-%H"  # Group by hour
+        display_format = "%H:00"  # Display as hour
+        label_format = lambda dt_str: datetime.strptime(dt_str, "%Y-%m-%d-%H").strftime("%H:00")
+    elif period == "week":
+        start_date = now - timedelta(days=7)
+        grouping_format = "%Y-%m-%d"  # Group by day
+        display_format = "%a"  # Display as day name
+        label_format = lambda dt_str: datetime.strptime(dt_str, "%Y-%m-%d").strftime("%a %m/%d")
+    elif period == "month":
+        start_date = now - timedelta(days=30)
+        grouping_format = "%Y-%m-%d"  # Group by day
+        display_format = "%m/%d"  # Display as month/day
+        label_format = lambda dt_str: datetime.strptime(dt_str, "%Y-%m-%d").strftime("%m/%d")
+    elif period == "3months":
+        start_date = now - timedelta(days=90)
+        grouping_format = "%Y-%W"  # Group by week
+        display_format = "Week %W"  # Display as week
+        label_format = lambda dt_str: f"Week {datetime.strptime(dt_str + '-1', '%Y-%W-%w').strftime('%m/%d')}"
+    elif period == "6months":
+        start_date = now - timedelta(days=180)
+        grouping_format = "%Y-%m"  # Group by month
+        display_format = "%b"  # Display as month name
+        label_format = lambda dt_str: datetime.strptime(dt_str, "%Y-%m").strftime("%b %Y")
+    elif period == "year":
+        start_date = now - timedelta(days=365)
+        grouping_format = "%Y-%m"  # Group by month
+        display_format = "%b %Y"  # Display as month year
+        label_format = lambda dt_str: datetime.strptime(dt_str, "%Y-%m").strftime("%b %Y")
+    else:
+        # Default to 6 months
+        start_date = now - timedelta(days=180)
+        grouping_format = "%Y-%m"
+        display_format = "%b %Y"
+        label_format = lambda dt_str: datetime.strptime(dt_str, "%Y-%m").strftime("%b %Y")
     
     transactions_cursor = db.transactions.find({
         "user_id": current_user_id,
-        "date": {"$gte": start_date, "$lte": end_date}
+        "date": {"$gte": start_date, "$lte": now}
     })
     transactions = await transactions_cursor.to_list(1000)
     
-    # Group by month
-    monthly_data = {}
+    # Group by the determined format
+    grouped_data = {}
     for transaction in transactions:
-        month_key = transaction["date"].strftime("%Y-%m")
-        if month_key not in monthly_data:
-            monthly_data[month_key] = {"income": 0, "expenses": 0}
+        group_key = transaction["date"].strftime(grouping_format)
+        if group_key not in grouped_data:
+            grouped_data[group_key] = {"income": 0, "expenses": 0}
         
         if transaction["type"] == "income":
-            monthly_data[month_key]["income"] += transaction["amount"]
+            grouped_data[group_key]["income"] += transaction["amount"]
         else:
-            monthly_data[month_key]["expenses"] += transaction["amount"]
+            grouped_data[group_key]["expenses"] += transaction["amount"]
     
     # Format for chart
     trend_data = []
-    for month, data in sorted(monthly_data.items()):
+    for group_key, data in sorted(grouped_data.items()):
         trend_data.append({
-            "month": datetime.strptime(month, "%Y-%m").strftime("%b %Y"),
+            "period": label_format(group_key),
             "income": data["income"],
             "expenses": data["expenses"],
             "net": data["income"] - data["expenses"]
